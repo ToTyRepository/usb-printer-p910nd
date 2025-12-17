@@ -11,6 +11,7 @@ PORT = os.environ.get("P910ND_PORT", "0")      # 0 => TCP 9100
 BIDI = os.environ.get("P910ND_BIDI", "0")
 CHECK_INTERVAL = float(os.environ.get("CHECK_INTERVAL", "5"))
 RESTART_DELAY = float(os.environ.get("RESTART_DELAY", "2"))
+QUIET = os.environ.get("P910ND_QUIET", "0") == "1"   # 1 => chowamy logi p910nd
 
 proc = None
 stopping = False
@@ -51,7 +52,17 @@ def start_p910nd():
     global proc
     cmd = build_cmd()
     print(f"[watcher] Starting p910nd: {' '.join(cmd)}", flush=True)
-    proc = subprocess.Popen(cmd)
+
+    if QUIET:
+        # wyciszamy logi p910nd (te read/wrote ...)
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,
+        )
+    else:
+        # pełne logi p910nd na stdout kontenera
+        proc = subprocess.Popen(cmd)
 
 
 def stop_p910nd():
@@ -83,7 +94,8 @@ print(f"  DEVICE         = {DEVICE}")
 print(f"  PORT           = {PORT} (TCP {9100 + int(PORT)})")
 print(f"  BIDI           = {BIDI}")
 print(f"  CHECK_INTERVAL = {CHECK_INTERVAL}s")
-print(f"  RESTART_DELAY  = {RESTART_DELAY}s", flush=True)
+print(f"  RESTART_DELAY  = {RESTART_DELAY}s")
+print(f"  QUIET          = {QUIET}", flush=True)
 
 while True:
     if stopping:
