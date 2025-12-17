@@ -1,0 +1,1 @@
+# Brak dodatkowych zależności Pythona – skrypt używa tylko standardowej biblioteki.
