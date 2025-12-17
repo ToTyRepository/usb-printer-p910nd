@@ -12,10 +12,15 @@ CHECK_INTERVAL = float(os.environ.get("CHECK_INTERVAL", "5"))
 RESTART_DELAY = float(os.environ.get("RESTART_DELAY", "2"))
 
 def build_cmd():
-    cmd = ["p910nd", "-f", "-d"]  # foreground + logi na stdout
+    # p910nd [-f device] [-i bindaddr] [-bvd] [0|1|2]
+    cmd = ["p910nd", "-f", DEVICE]
+
     if BIDI == "1":
         cmd.append("-b")
-    cmd.extend([PORT, DEVICE])
+
+    cmd.append("-d")          # nie odłączaj od TTY = zostaje w foreground
+    cmd.append(PORT)          # 0 -> TCP 9100, 1 -> 9101, 2 -> 9102
+
     return cmd
 
 proc = None
