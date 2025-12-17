@@ -30,7 +30,9 @@ def build_cmd():
 
 
 def device_available(path: str) -> bool:
-    """Sprawdź, czy urządzenie istnieje i daje się otworzyć."""
+    """Sprawdź, czy urządzenie istnieje i daje się otworzyć.
+       EBUSY (zajęte) traktujemy jako OK – zwykle p910nd ma je wtedy otwarte.
+    """
     if not os.path.exists(path):
         return False
     try:
@@ -38,7 +40,9 @@ def device_available(path: str) -> bool:
         os.close(fd)
         return True
     except OSError as e:
-        # Typowe: EIO, ENODEV, EBUSY – traktujemy jako chwilowy brak
+        if e.errno == errno.EBUSY:
+            # Urządzenie jest zajęte (np. przez p910nd) – to dla nas znaczy, że jest OK.
+            return True
         print(f"[watcher] Device {path} not usable yet: {e}", flush=True)
         return False
 
