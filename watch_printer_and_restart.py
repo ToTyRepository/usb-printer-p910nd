@@ -6,20 +6,20 @@ import signal
 import sys
 
 DEVICE = os.environ.get("P910ND_DEVICE", "/dev/usb/lp0")
-PORT = os.environ.get("P910ND_PORT", "0")
+PORT = os.environ.get("P910ND_PORT", "0")      # 0 => TCP 9100
 BIDI = os.environ.get("P910ND_BIDI", "0")
 CHECK_INTERVAL = float(os.environ.get("CHECK_INTERVAL", "5"))
 RESTART_DELAY = float(os.environ.get("RESTART_DELAY", "2"))
 
 def build_cmd():
     # p910nd [-f device] [-i bindaddr] [-bvd] [0|1|2]
-    cmd = ["p910nd", "-f", DEVICE]
+    cmd = ["p910nd", "-f", DEVICE]   # tu podajemy urządzenie po -f
 
     if BIDI == "1":
-        cmd.append("-b")
+        cmd.append("-b")             # bidirectional, jeśli włączone
 
-    cmd.append("-d")          # nie odłączaj od TTY = zostaje w foreground
-    cmd.append(PORT)          # 0 -> TCP 9100, 1 -> 9101, 2 -> 9102
+    cmd.append("-d")                 # foreground (logi na stdout)
+    cmd.append(PORT)                 # numer portu: 0, 1 lub 2
 
     return cmd
 
@@ -65,7 +65,6 @@ while True:
     if stopping:
         break
 
-    # jeśli nie ma urządzenia, nie ma sensu trzymać p910nd
     if not os.path.exists(DEVICE):
         if proc and proc.poll() is None:
             print(f"[watcher] Device {DEVICE} disappeared, stopping p910nd", flush=True)
@@ -74,7 +73,6 @@ while True:
         time.sleep(CHECK_INTERVAL)
         continue
 
-    # jeśli p910nd nie działa, uruchom ponownie
     if proc is None or proc.poll() is not None:
         if proc and proc.poll() is not None:
             print(f"[watcher] p910nd exited with code {proc.returncode}, restarting after {RESTART_DELAY}s...", flush=True)
